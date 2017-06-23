@@ -20,11 +20,12 @@ distribute = banker.addAction({'verb': 'distribute'})
 for i in range(4):
     actor = Agent('Agent'+str(i))
     world.addAgent(actor)
-    actor.setHorizon(10)
-    world.defineState(actor.name,'money',int)
+    actor.setHorizon(15)
+    world.defineState(actor.name,'money',float)
     # Everyone starts with $200
-    actor.setState('money',200)
+    # actor.setState('money',200)
 
+    '''
     for i in range(20):
         money = i*10
         contrib = 'contribute '+str(money)
@@ -37,16 +38,29 @@ for i in range(4):
 
         tree = makeTree(incrementMatrix(stateKey(banker.name,'pool'),money))
         world.setDynamics(stateKey(banker.name, 'pool'), action, tree)
+    '''
+    actor.setState('money',5.)
+    action = actor.addAction({'verb': 'pass'})
+    action = actor.addAction({'verb': 'contribute'})
+    tree = makeTree(incrementMatrix(stateKey(None,'round'),1))
+    world.setDynamics(stateKey(None,'round'),action,tree)
 
-    tree = makeTree(addFeatureMatrix(stateKey(actor.name,'money'),stateKey(banker.name, 'pool'),0.4))
+    tree = makeTree(incrementMatrix(stateKey(actor.name,'money'),-1))
+    world.setDynamics(stateKey(actor.name,'money'), action, tree)
+
+    tree = makeTree(incrementMatrix(stateKey(banker.name,'pool'),1))
+    world.setDynamics(stateKey(banker.name, 'pool'), action, tree)
+
+    tree = makeTree(addFeatureMatrix(stateKey(actor.name,'money'),stateKey(banker.name, 'pool'),0.9))
     world.setDynamics(stateKey(actor.name, 'money'),distribute,tree)
 
     actor.setReward(maximizeFeature(stateKey(actor.name, 'money')),1.0)
-    actor.setReward(maximizeFeature(stateKey(banker.name, 'pool')),0.5)
+    #actor.setReward(maximizeFeature(stateKey(banker.name, 'pool')),0.5)
 
 world.addTermination(makeTree({'if': thresholdRow(stateKey(None,'round'),20),
                                 True: True,
                                 False: False}))
+
 world.setOrder(['Agent0', 'Agent1', 'Agent2', 'Agent3', 'Banker'])
 #world.setOrder([set(world.agents.keys())])
 
